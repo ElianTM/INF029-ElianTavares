@@ -10,10 +10,10 @@
 //  O aluno deve preencher seus dados abaixo, e implementar as questões do trabalho
 
 //  ----- Dados do Aluno -----
-//  Nome:
-//  email:
-//  Matrícula:
-//  Semestre:
+//  Nome: Elian Tavares de Melo Junior
+//  email: tavareselian2006@gmail.com
+//  Matrícula: 20251160018
+//  Semestre: 2
 
 //  Copyright © 2016 Renato Novais. All rights reserved.
 // Última atualização: 07/05/2021 - 19/08/2016 - 17/10/2025
@@ -92,16 +92,23 @@ int teste(int a)
 int q1(char data[])
 {
   int datavalida = 1;
+  DataQuebrada dq = quebraData(data);
+  if (!dq.valido)
+    return 0;
 
-  //quebrar a string data em strings sDia, sMes, sAno
+  if (dq.iDia <= 0 || dq.iMes <= 0 || dq.iMes > 12 || dq.iAno < 0)
+    return 0;
 
+  int diasMes[] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
-  //printf("%s\n", data);
+  int bissexto = (dq.iAno % 400 == 0 || (dq.iAno % 4 == 0 && dq.iAno % 100 != 0));
+  if (dq.iMes == 2 && bissexto)
+    diasMes[2] = 29;
 
-  if (datavalida)
-      return 1;
-  else
-      return 0;
+  if (dq.iDia > diasMes[dq.iMes])
+    return 0;
+
+  return 1;
 }
 
 
@@ -122,28 +129,66 @@ int q1(char data[])
  */
 DiasMesesAnos q2(char datainicial[], char datafinal[])
 {
+  DiasMesesAnos dma;
 
-    //calcule os dados e armazene nas três variáveis a seguir
-    DiasMesesAnos dma;
+  if (q1(datainicial) == 0)
+  {
+    dma.retorno = 2;
+    return dma;
+  }
+  else if (q1(datafinal) == 0)
+  {
+    dma.retorno = 3;
+    return dma;
+  }
 
-    if (q1(datainicial) == 0){
-      dma.retorno = 2;
-      return dma;
-    }else if (q1(datafinal) == 0){
-      dma.retorno = 3;
-      return dma;
-    }else{
-      //verifique se a data final não é menor que a data inicial
-      
-      //calcule a distancia entre as datas
+  DataQuebrada dq1 = quebraData(datainicial);
+  DataQuebrada dq2 = quebraData(datafinal);
 
+  if (dq2.iAno < dq1.iAno || (dq2.iAno == dq1.iAno && dq2.iMes < dq1.iMes) || (dq2.iAno == dq1.iAno && dq2.iMes == dq1.iMes && dq2.iDia < dq1.iDia))
+  {
+    dma.retorno = 4;
+    return dma;
+  }
 
-      //se tudo der certo
-      dma.retorno = 1;
-      return dma;
-      
+  int diasMes[] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
+  int bissexto = (dq2.iAno % 400 == 0 || (dq2.iAno % 4 == 0 && dq2.iAno % 100 != 0));
+  if (dq2.iMes == 2 && bissexto)
+    diasMes[2] = 29;
+
+  dma.qtdAnos = dq2.iAno - dq1.iAno;
+  dma.qtdMeses = dq2.iMes - dq1.iMes;
+  dma.qtdDias = dq2.iDia - dq1.iDia;
+
+  if (dma.qtdDias < 0)
+  {
+    dma.qtdMeses--;
+
+    if (dq2.iMes == 1)
+    {
+      int bissextoAnt = ((dq2.iAno - 1) % 400 == 0 || ((dq2.iAno - 1) % 4 == 0 && (dq2.iAno - 1) % 100 != 0));
+      dma.qtdDias += bissextoAnt ? 29 : 31;
     }
-    
+    else
+    {
+      int mesAnt = dq2.iMes - 1;
+
+      if (mesAnt == 2 && (dq2.iAno % 400 == 0 || (dq2.iAno % 4 == 0 && dq2.iAno % 100 != 0)))
+        dma.qtdDias += 29;
+      else
+        dma.qtdDias += diasMes[mesAnt];
+    }
+  }
+
+  if (dma.qtdMeses < 0)
+  {
+    dma.qtdAnos--;
+    dma.qtdMeses += 12;
+  }
+
+  dma.retorno = 1;
+  return dma;
 }
 
 /*
@@ -158,9 +203,28 @@ DiasMesesAnos q2(char datainicial[], char datafinal[])
  */
 int q3(char *texto, char c, int isCaseSensitive)
 {
-    int qtdOcorrencias = -1;
+   int qtdOcorrencias = 0;
 
-    return qtdOcorrencias;
+  if (isCaseSensitive != 1)
+  {
+    c = tolower(c);
+
+    for (int i = 0; texto[i] != '\0'; i++)
+    {
+      if (tolower(texto[i]) == c)
+        qtdOcorrencias++;
+    }
+  }
+  else
+  {
+    for (int i = 0; texto[i] != '\0'; i++)
+    {
+      if (texto[i] == c)
+        qtdOcorrencias++;
+    }
+  }
+
+  return qtdOcorrencias;
 }
 
 /*
@@ -180,9 +244,28 @@ int q3(char *texto, char c, int isCaseSensitive)
  */
 int q4(char *strTexto, char *strBusca, int posicoes[30])
 {
-    int qtdOcorrencias = -1;
-
-    return qtdOcorrencias;
+  int qtdOcorrencias = 0;
+  int tamTexto = strlen(strTexto);
+  int tamBusca = strlen(strBusca);
+  for (int i = 0; i <= tamTexto - tamBusca; i++)
+  {
+    int encontrou = 1;
+    for (int j = 0; j < tamBusca; j++)
+    {
+      if (strTexto[i + j] != strBusca[j])
+      {
+        encontrou = 0;
+        break;
+      }
+    }
+    if (encontrou)
+    {
+      posicoes[2 * qtdOcorrencias] = i + 1;
+      posicoes[2 * qtdOcorrencias + 1] = i + tamBusca;
+      qtdOcorrencias++;
+    }
+  }
+  return qtdOcorrencias;
 }
 
 /*
@@ -197,8 +280,24 @@ int q4(char *strTexto, char *strBusca, int posicoes[30])
 
 int q5(int num)
 {
-
-    return num;
+int numInvert = 0;
+  int negativo = 0;
+  if (num == 0)
+    return 0;
+  if (num < 0)
+  {
+    negativo = 1;
+    num = -num;
+  }
+  while (num > 0)
+  {
+    int digito = num % 10;
+    numInvert = numInvert * 10 + digito;
+    num = num / 10;
+  }
+  if (negativo)
+    numInvert = -numInvert;
+  return numInvert;
 }
 
 /*
@@ -213,8 +312,28 @@ int q5(int num)
 
 int q6(int numerobase, int numerobusca)
 {
-    int qtdOcorrencias;
-    return qtdOcorrencias;
+char base[20], busca[10];
+  sprintf(base, "%d", numerobase);
+  sprintf(busca, "%d", numerobusca);
+
+  int qtdOcorrencias = 0;
+
+  int tamBusca = strlen(busca);
+  int tamBase = strlen(base);
+
+  for (int i = 0; i <= tamBase - tamBusca; i++)
+  {
+    int j;
+    for (j = 0; j < tamBusca; j++)
+    {
+      if (base[i + j] != busca[j])
+        break;
+    }
+    if (j == tamBusca)
+      qtdOcorrencias++;
+  }
+
+  return qtdOcorrencias;
 }
 
 /*
@@ -227,11 +346,67 @@ int q6(int numerobase, int numerobusca)
     1 se achou 0 se não achou
  */
 
- int q7(char matriz[8][10], char palavra[5])
- {
-     int achou;
-     return achou;
- }
+ int q7( char grade[8][10],
+    char palavra[],
+    int linhaInicial,
+    int colunaInicial,
+    int passoLinha,
+    int passoColuna
+) {
+    int tamanhoPalavra = strlen(palavra);
+
+    for (int i = 0; i < tamanhoPalavra; i++) {
+        int linhaAtual = linhaInicial + i * passoLinha;
+        int colunaAtual = colunaInicial + i * passoColuna;
+
+        if (linhaAtual < 0 || linhaAtual >= 8 ||
+            colunaAtual < 0 || colunaAtual >= 10)
+            return 0;
+
+        if (grade[linhaAtual][colunaAtual] != palavra[i])
+            return 0;
+    }
+
+    return 1;
+}
+
+int procurarPalavra(char grade[8][10], char palavra[]) {
+
+    int direcoesLinha[8]  = { 0,  0,  1, -1,  1,  1, -1, -1 };
+    int direcoesColuna[8] = { 1, -1,  0,  0,  1, -1,  1, -1 };
+
+    for (int linha = 0; linha < 8; linha++) {
+        for (int coluna = 0; coluna < 10; coluna++) {
+
+            if (grade[linha][coluna] == palavra[0]) {
+
+                for (int d = 0; d < 8; d++) {
+                    int passoLinha = direcoesLinha[d];
+                    int passoColuna = direcoesColuna[d];
+
+                    if (verificarDirecao(grade, palavra, linha, coluna, passoLinha, passoColuna))
+                        return 1;
+                }
+            }
+        }
+    }
+
+    return 0;
+}
+
+int main() {
+    char grade[8][10];
+    char palavra[100];
+
+    for (int linha = 0; linha < 8; linha++)
+        scanf("%s", grade[linha]);
+
+    scanf("%s", palavra);
+
+    printf("%d\n", procurarPalavra(grade, palavra));
+
+    return 0;
+}
 
 
 
